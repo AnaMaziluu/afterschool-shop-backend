@@ -76,6 +76,43 @@ app.get("/collections/:collectionName", async function (req, res, next) {
   }
 });
 
+app.post("/collections/orders", async (req, res) => {
+  try {
+    const order = req.body;
+    if (!order.name || !order.surname || !order.phoneNumber || !order.lessonIDs) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    const result = await db.collection("orders").insertOne(order);
+    res.status(201).send({ message: "Order created successfully", orderId: result.insertedId });
+  } catch (error) {
+    console.error("Error saving order:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+app.put("/collections/lessons/:id", async (req, res) => {
+  try {
+    const lessonId = parseInt(req.params.id);
+    const updatedFields = req.body;
+
+    const result = await db.collection("lessons").updateOne(
+      { id: lessonId },
+      { $set: updatedFields }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send("Lesson not found");
+    }
+
+    res.send({ message: "Lesson updated successfully" });
+  } catch (error) {
+    console.error("Error updating lesson:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+
 // Error middleware
 app.use(function (req, res) {
   res.status(404);
