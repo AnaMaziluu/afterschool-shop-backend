@@ -112,6 +112,37 @@ app.put("/collections/lessons/:id", async (req, res) => {
   }
 });
 
+app.get("/search", async (req, res) => {
+  try {
+    const searchTerm = req.query.q || "";
+
+    // Check if the searchTerm is numeric
+    const isNumeric = !isNaN(searchTerm);
+
+    const query = isNumeric
+      ? {
+          $or: [
+            { subject: { $regex: searchTerm, $options: "i" } },
+            { location: { $regex: searchTerm, $options: "i" } },
+            { price: parseFloat(searchTerm) },
+            { availableSpaces: parseInt(searchTerm) },
+          ],
+        }
+      : {
+          $or: [
+            { subject: { $regex: searchTerm, $options: "i" } },
+            { location: { $regex: searchTerm, $options: "i" } },
+          ],
+        };
+
+    const results = await db.collection("lessons").find(query).toArray();
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error performing search:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
 
 // Error middleware
 app.use(function (req, res) {
