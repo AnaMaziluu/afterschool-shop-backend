@@ -150,7 +150,7 @@ app.use(function (req, res) {
   res.send("File not found");
 });
 
-// Start the server
-const server = app.listen(3000, "0.0.0.0", function () {
-  console.log("App started on port 3000 and is listening on all network interfaces.");
+const port = process.env.PORT || 3000;
+app.listen(port, function () {
+  console.log("App started on port " + port);
 });
